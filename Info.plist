@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key><string>se.naraapp.nara</string>
+    <key>CFBundleName</key><string>NÄRA</string>
+    <key>CFBundleDisplayName</key><string>NÄRA</string>
+    <key>UILaunchStoryboardName</key><string>LaunchScreen</string>
+    <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
+    <key>NSLocationWhenInUseUsageDescription</key><string>NÄRA behöver din plats för att hitta livspartner inom 10 meter.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key><string>NÄRA hittar personer nära dig även i bakgrunden.</string>
+</dict>
+</plist>
