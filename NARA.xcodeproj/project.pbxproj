@@ -1,20 +1,239 @@
-workflows:
-  nara-ios-release:
-    name: NARA iOS Release
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Fix and Build
-        script: |
-          mkdir -p NARA
-          cp NARA.xcodeproj/Info.plist NARA/ 2>/dev/null || true
-          cp NARA.xcodeproj/NARAApp.swift NARA/ 2>/dev/null || true
-          cp NARA.xcodeproj/LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          cp Info.plist NARA/ 2>/dev/null || true
-          cp NARAApp.swift NARA/ 2>/dev/null || true
-          cp LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          ls -R
-          xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {
+    };
+    objectVersion = 56;
+    objects = {
+
+/* Begin PBXBuildFile section */
+        8242147BA162407FA6E601F9 /* NARAApp.swift in Sources */ = {
+            isa = PBXBuildFile;
+            fileRef = 570093CE11C84E75B9EF9163 /* NARAApp.swift */;
+        };
+        49720E3A0CDB4D829D33BC75 /* LaunchScreen.storyboard in Resources */ = {
+            isa = PBXBuildFile;
+            fileRef = 4D76F6DBCFA84D4EACD5C180 /* LaunchScreen.storyboard */;
+        };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+        570093CE11C84E75B9EF9163 /* NARAApp.swift */ = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = NARAApp.swift;
+            sourceTree = "<group>";
+        };
+        25BAE35579D54730B127DB29 /* Info.plist */ = {
+            isa = PBXFileReference;
+            lastKnownFileType = text.plist.xml;
+            path = Info.plist;
+            sourceTree = "<group>";
+        };
+        4D76F6DBCFA84D4EACD5C180 /* LaunchScreen.storyboard */ = {
+            isa = PBXFileReference;
+            lastKnownFileType = file.storyboard;
+            path = LaunchScreen.storyboard;
+            sourceTree = "<group>";
+        };
+        EC4E6A031E79487AA492905F /* NARA.app */ = {
+            isa = PBXFileReference;
+            explicitFileType = wrapper.application;
+            includeInIndex = 0;
+            path = NARA.app;
+            sourceTree = BUILT_PRODUCTS_DIR;
+        };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+        53AFDBB6552B46E9874C8CB8 /* Frameworks */ = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+        76CC17C86AB243339004D605 = {
+            isa = PBXGroup;
+            children = (
+                DFEDB780C3FC46D982CA6180 /* NARA */,
+                66E79133ED50444AA41E8123 /* Products */,
+            );
+            sourceTree = "<group>";
+        };
+        66E79133ED50444AA41E8123 /* Products */ = {
+            isa = PBXGroup;
+            children = (
+                EC4E6A031E79487AA492905F /* NARA.app */,
+            );
+            name = Products;
+            sourceTree = "<group>";
+        };
+        DFEDB780C3FC46D982CA6180 /* NARA */ = {
+            isa = PBXGroup;
+            children = (
+                570093CE11C84E75B9EF9163 /* NARAApp.swift */,
+                25BAE35579D54730B127DB29 /* Info.plist */,
+                4D76F6DBCFA84D4EACD5C180 /* LaunchScreen.storyboard */,
+            );
+            path = NARA;
+            sourceTree = "<group>";
+        };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+        1D7DB1CFDDF6461E92CACF9D /* NARA */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = EDD6AA913CC84636BAF04EB1 /* Build configuration list for PBXNativeTarget "NARA" */;
+            buildPhases = (
+                AF7B371FBD524F4C817A583C /* Sources */,
+                53AFDBB6552B46E9874C8CB8 /* Frameworks */,
+                EB13346AD10E4564AF9C0897 /* Resources */,
+            );
+            buildRules = (
+            );
+            dependencies = (
+            );
+            name = NARA;
+            productName = NARA;
+            productReference = EC4E6A031E79487AA492905F /* NARA.app */;
+            productType = "com.apple.product-type.application";
+        };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+        5CFBE247AE56436FAD2BFCAC /* Project object */ = {
+            isa = PBXProject;
+            attributes = {
+                BuildIndependentTargetsInParallel = 1;
+                LastSwiftUpdateCheck = 1420;
+                LastUpgradeCheck = 1420;
+                TargetAttributes = {
+                    1D7DB1CFDDF6461E92CACF9D = {
+                        CreatedOnToolsVersion = 14.2;
+                    };
+                };
+            };
+            buildConfigurationList = B27867510EBD4C7987588337 /* Build configuration list for PBXProject "NARA" */;
+            compatibilityVersion = "Xcode 14.0";
+            developmentRegion = en;
+            hasScannedForEncodings = 0;
+            knownRegions = (
+                en,
+                Base,
+            );
+            mainGroup = 76CC17C86AB243339004D605;
+            productRefGroup = 66E79133ED50444AA41E8123 /* Products */;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (
+                1D7DB1CFDDF6461E92CACF9D /* NARA */,
+            );
+        };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+        3345254C54CE44238915F12E /* Resources */ = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                49720E3A0CDB4D829D33BC75 /* LaunchScreen.storyboard in Resources */,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+        AF7B371FBD524F4C817A583C /* Sources */ = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                8242147BA162407FA6E601F9 /* NARAApp.swift in Sources */,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+        88217635EB174800B835D17C /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ENABLE_MODULES = YES;
+                CODE_SIGNING_ALLOWED = NO;
+                INFOPLIST_FILE = NARA/Info.plist;
+                IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                PRODUCT_BUNDLE_IDENTIFIER = com.naralabs.NARA;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_VERSION = 5.0;
+            };
+            name = Debug;
+        };
+        0D27F93439684AC78C46655A /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                ALWAYS_SEARCH_USER_PATHS = NO;
+                CLANG_ANALYZER_NONNULL = YES;
+                CLANG_ENABLE_MODULES = YES;
+                CODE_SIGNING_ALLOWED = NO;
+                INFOPLIST_FILE = NARA/Info.plist;
+                IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+                LD_RUNPATH_SEARCH_PATHS = (
+                    "$(inherited)",
+                    "@executable_path/Frameworks",
+                );
+                PRODUCT_BUNDLE_IDENTIFIER = com.naralabs.NARA;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SWIFT_EMIT_LOC_STRINGS = YES;
+                SWIFT_VERSION = 5.0;
+            };
+            name = Release;
+        };
+        8F0CC63139F3473B88CBE1A1 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGNING_ALLOWED = NO;
+            };
+            name = Debug;
+        };
+        B2F993737A5C4D1D90686AD5 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGNING_ALLOWED = NO;
+            };
+            name = Release;
+        };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+        B27867510EBD4C7987588337 /* Build configuration list for PBXProject "NARA" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                8F0CC63139F3473B88CBE1A1 /* Debug */,
+                B2F993737A5C4D1D90686AD5 /* Release */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        EDD6AA913CC84636BAF04EB1 /* Build configuration list for PBXNativeTarget "NARA" */ = {
+            isa = XCConfigurationList;
+            buildConfigurations = (
+                88217635EB174800B835D17C /* Debug */,
+                0D27F93439684AC78C46655A /* Release */,
+            );
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+/* End XCConfigurationList section */
+    };
+    rootObject = 5CFBE247AE56436FAD2BFCAC /* Project object */;
+}
