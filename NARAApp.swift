@@ -8,3 +8,16 @@ struct NARAApp: App {
         }
     }
 }
+
+struct ContentView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("NARA")
+                .font(.largeTitle)
+                .bold()
+            Text("Välkommen!")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+    }
+}
