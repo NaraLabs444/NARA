@@ -7,6 +7,18 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Build iOS App
+            - name: List files
         script: |
-          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
+          ls -R
+            - name: Fix project paths and build
+        script: |
+          # Kopiera filerna till rätt plats
+          mkdir -p NARA
+          cp NARA.xcodeproj/Info.plist NARA/ 2>/dev/null || true
+          cp NARA.xcodeproj/NARAApp.swift NARA/ 2>/dev/null || true
+          cp NARA.xcodeproj/LaunchScreen.storyboard NARA/ 2>/dev/null || true
+          cp Info.plist NARA/ 2>/dev/null || true
+          cp NARAApp.swift NARA/ 2>/dev/null || true
+          cp LaunchScreen.storyboard NARA/ 2>/dev/null || true
+          ls -R
+          xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
