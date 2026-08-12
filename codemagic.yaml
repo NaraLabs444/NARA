@@ -1,5 +1,3 @@
-
-
 workflows:
   nara-ios-release:
     name: NARA iOS Release
@@ -21,6 +19,4 @@ workflows:
           cp Info.plist NARA/ 2>/dev/null || true
           cp NARAApp.swift NARA/ 2>/dev/null || true
           cp LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          ls -R NARA
           xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
-
