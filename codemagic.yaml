@@ -1,1 +1,12 @@
-
+workflows:
+  ios-release:
+    name: NARA iOS Release
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Build iOS App
+        script: |
+          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
