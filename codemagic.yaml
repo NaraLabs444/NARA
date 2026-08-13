@@ -1,14 +1,21 @@
 workflows:
   nara-ios-release:
-    name: NARA iOS Release (Test - funkar utan Apple konto)
+    name: NARA iOS Release - Alla Sprak - RATT
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
       xcode: latest
       cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
     scripts:
-      - name: Fix and Build
+      - name: Fix and Build - Alla Sprak - TARGET NARA RATT
         script: |
+          echo "=== Bygger NÄRA för ALLA SPRÅK - TARGET NARA ==="
           mkdir -p NARA
           cp NARA.xcodeproj/Info.plist NARA/ 2>/dev/null || true
           cp NARA.xcodeproj/NARAApp.swift NARA/ 2>/dev/null || true
@@ -16,35 +23,10 @@ workflows:
           cp Info.plist NARA/ 2>/dev/null || true
           cp NARAApp.swift NARA/ 2>/dev/null || true
           cp LaunchScreen.storyboard NARA/ 2>/dev/null || true
+          echo "Bygger med -target NARA - DETTA AR RATT!"
           xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
-
-  nara-ios-ipa:
-    name: NARA IPA (For iPhone - kräver Apple konto)
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      xcode: latest
-      cocoapods: default
-      vars:
-        BUNDLE_ID: "com.naralabs.nara"
-    scripts:
-      - name: Build IPA without signing (for export)
-        script: |
-          mkdir -p NARA
-          cp NARA.xcodeproj/Info.plist NARA/ 2>/dev/null || true
-          cp NARA.xcodeproj/NARAApp.swift NARA/ 2>/dev/null || true
-          cp NARA.xcodeproj/LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          cp Info.plist NARA/ 2>/dev/null || true
-          cp NARAApp.swift NARA/ 2>/dev/null || true
-          cp LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos -archivePath /tmp/NARA.xcarchive archive CODE_SIGNING_ALLOWED=NO
-          mkdir -p /tmp/ipa_export
-          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>signingStyle</key><string>manual</string></dict></plist>' > /tmp/ExportOptions.plist
-          xcodebuild -exportArchive -archivePath /tmp/NARA.xcarchive -exportPath /tmp/ipa_export -exportOptionsPlist /tmp/ExportOptions.plist CODE_SIGNING_ALLOWED=NO || echo "IPA export needs Apple signing - see next steps"
     artifacts:
-      - /tmp/NARA.xcarchive
-      - /tmp/ipa_export/*.ipa
-      - /tmp/ipa_export/*.log
+      - /tmp/xcodebuild_logs/*.log
     publishing:
       email:
         recipients:
