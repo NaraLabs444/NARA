@@ -8,9 +8,16 @@ workflows:
       groups:
         - app_store_connect
     scripts:
+      - name: Fix file locations
+        script: |
+          ls -la
+          mkdir -p NARA
+          if [ -f Info.plist ] && [ ! -f NARA/Info.plist ]; then cp Info.plist NARA/Info.plist; echo "Copied Info.plist to NARA/"; fi
+          if [ -f LaunchScreen.storyboard ] && [ ! -f NARA/LaunchScreen.storyboard ]; then cp LaunchScreen.storyboard NARA/LaunchScreen.storyboard; fi
+          ls -la NARA/
       - name: Build with target NARA
         script: |
-          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -archivePath $CM_BUILD_DIR/NARA.xcarchive
+          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -destination 'generic/platform=iOS' -archivePath $CM_BUILD_DIR/NARA.xcarchive CODE_SIGNING_ALLOWED=NO
           echo "** BUILD SUCCEEDED **"
     artifacts:
       - $CM_BUILD_DIR/NARA.xcarchive
@@ -20,3 +27,4 @@ workflows:
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
+        
