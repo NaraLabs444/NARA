@@ -5,16 +5,12 @@ workflows:
     max_build_duration: 60
     environment:
       xcode: latest
-      cocoapods: default
     scripts:
-      - name: Set up Pods if needed
-        script: |
-          if [ -f "ios/Podfile" ]; then cd ios && pod install --repo-update; elif [ -f "Podfile" ]; then pod install --repo-update; else echo "No Podfile - skipping"; fi
       - name: Build with target NARA
         script: |
-          xcodebuild -workspace NARA.xcworkspace -target NARA -configuration Release -sdk iphoneos -archivePath $CM_BUILD_DIR/NARA.xcarchive archive CODE_SIGNING_ALLOWED=NO || xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos -archivePath $CM_BUILD_DIR/NARA.xcarchive archive CODE_SIGNING_ALLOWED=NO
+          xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos -archivePath $CM_BUILD_DIR/NARA.xcarchive archive CODE_SIGNING_ALLOWED=NO
+          echo "** BUILD SUCCEEDED **"
     artifacts:
-      - build/ios/ipa/*.ipa
       - $CM_BUILD_DIR/NARA.xcarchive
     publishing:
       app_store_connect:
