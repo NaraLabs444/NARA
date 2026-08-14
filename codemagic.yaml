@@ -1,6 +1,6 @@
 workflows:
   nara-ios-testflight:
-    name: nara-ios-testflight - Alla Sprak - RATT
+    name: nara-ios-testflight
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
@@ -10,15 +10,22 @@ workflows:
     scripts:
       - name: Fix file locations
         script: |
-          ls -la
           mkdir -p NARA
-          if [ -f Info.plist ] && [ ! -f NARA/Info.plist ]; then cp Info.plist NARA/Info.plist; echo "Copied Info.plist to NARA/"; fi
-          if [ -f LaunchScreen.storyboard ] && [ ! -f NARA/LaunchScreen.storyboard ]; then cp LaunchScreen.storyboard NARA/LaunchScreen.storyboard; fi
+          echo "Before fix:"
+          ls -la
+          ls -la NARA/ || true
+          if [ -f Info.plist ]; then cp Info.plist NARA/Info.plist; echo "Copied Info.plist"; fi
+          if [ -f LaunchScreen.storyboard ]; then cp LaunchScreen.storyboard NARA/LaunchScreen.storyboard; echo "Copied LaunchScreen"; fi
+          if [ -f NARAApp.swift ]; then cp NARAApp.swift NARA/NARAApp.swift; echo "Copied NARAApp.swift"; fi
+          # If files are in NARA/NARA nested
+          if [ -f NARA/NARA/Info.plist ]; then cp NARA/NARA/Info.plist NARA/Info.plist; fi
+          if [ -f NARA/NARA/NARAApp.swift ]; then cp NARA/NARA/NARAApp.swift NARA/NARAApp.swift; fi
+          if [ -f NARA/NARA/LaunchScreen.storyboard ]; then cp NARA/NARA/LaunchScreen.storyboard NARA/LaunchScreen.storyboard; fi
+          echo "After fix:"
           ls -la NARA/
-      - name: Build with target NARA
+      - name: Build for iOS TestFlight
         script: |
-          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -destination 'generic/platform=iOS' -archivePath $CM_BUILD_DIR/NARA.xcarchive CODE_SIGNING_ALLOWED=NO
-          echo "** BUILD SUCCEEDED **"
+          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -destination 'generic/platform=iOS' -archivePath $CM_BUILD_DIR/NARA.xcarchive
     artifacts:
       - $CM_BUILD_DIR/NARA.xcarchive
     publishing:
@@ -27,4 +34,3 @@ workflows:
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-        
