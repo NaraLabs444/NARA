@@ -11,21 +11,16 @@ workflows:
       - name: Fix file locations
         script: |
           mkdir -p NARA
-          echo "Before fix:"
-          ls -la
-          ls -la NARA/ || true
-          if [ -f Info.plist ]; then cp Info.plist NARA/Info.plist; echo "Copied Info.plist"; fi
-          if [ -f LaunchScreen.storyboard ]; then cp LaunchScreen.storyboard NARA/LaunchScreen.storyboard; echo "Copied LaunchScreen"; fi
-          if [ -f NARAApp.swift ]; then cp NARAApp.swift NARA/NARAApp.swift; echo "Copied NARAApp.swift"; fi
-          # If files are in NARA/NARA nested
-          if [ -f NARA/NARA/Info.plist ]; then cp NARA/NARA/Info.plist NARA/Info.plist; fi
-          if [ -f NARA/NARA/NARAApp.swift ]; then cp NARA/NARA/NARAApp.swift NARA/NARAApp.swift; fi
-          if [ -f NARA/NARA/LaunchScreen.storyboard ]; then cp NARA/NARA/LaunchScreen.storyboard NARA/LaunchScreen.storyboard; fi
-          echo "After fix:"
+          if [ -f Info.plist ]; then cp Info.plist NARA/Info.plist; fi
+          if [ -f LaunchScreen.storyboard ]; then cp LaunchScreen.storyboard NARA/LaunchScreen.storyboard; fi
+          if [ -f NARAApp.swift ]; then cp NARAApp.swift NARA/NARAApp.swift; fi
           ls -la NARA/
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles --warn-only
       - name: Build for iOS TestFlight
         script: |
-          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -destination 'generic/platform=iOS' -archivePath $CM_BUILD_DIR/NARA.xcarchive
+          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -destination 'generic/platform=iOS' -archivePath $CM_BUILD_DIR/NARA.xcarchive CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates
     artifacts:
       - $CM_BUILD_DIR/NARA.xcarchive
     publishing:
