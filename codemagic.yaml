@@ -7,6 +7,10 @@ workflows:
       xcode: latest
       groups:
         - app_store_connect
+      vars:
+        XCODE_PROJECT: NARA.xcodeproj
+        XCODE_SCHEME: NARA
+        BUNDLE_ID: com.naralabs.NARA
     scripts:
       - name: Fix file locations
         script: |
@@ -14,27 +18,26 @@ workflows:
           if [ -f Info.plist ]; then cp Info.plist NARA/Info.plist; fi
           if [ -f LaunchScreen.storyboard ]; then cp LaunchScreen.storyboard NARA/LaunchScreen.storyboard; fi
           if [ -f NARAApp.swift ]; then cp NARAApp.swift NARA/NARAApp.swift; fi
-          ls -la NARA/
       - name: Set up code signing
         script: |
-          echo "Fetching signing files..."
-          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_STORE --create || true
-          xcode-project use-profiles --warn-only || true
           keychain initialize
-          app-store-connect fetch-signing-files com.naralabs.NARA -p IOS_APP_STORE --create || true
-          keychain add-certificates || true
-          xcode-project use-profiles || true
-      - name: Build IPA for TestFlight
+          app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create --verbose
+          keychain add-certificates
+          xcode-project use-profiles --verbose
+      - name: Build for iOS
         script: |
-          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA --config Release
+          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -destination 'generic/platform=iOS' -archivePath $CM_BUILD_DIR/NARA.xcarchive DEVELOPMENT_TEAM=W5RH5H66ZG CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/NARA.xcarchive -exportPath $CM_BUILD_DIR/ipa -exportOptionsPlist /Users/builder/export_options.plist || \
+          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA
     artifacts:
+      - $CM_BUILD_DIR/NARA.xcarchive
+      - $CM_BUILD_DIR/ipa/*.ipa
       - build/ios/ipa/*.ipa
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-        beta_groups:
-          - Internal Testing
