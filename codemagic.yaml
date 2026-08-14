@@ -5,10 +5,12 @@ workflows:
     max_build_duration: 60
     environment:
       xcode: latest
+      groups:
+        - app_store_connect
     scripts:
       - name: Build with target NARA
         script: |
-          xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos -archivePath $CM_BUILD_DIR/NARA.xcarchive archive CODE_SIGNING_ALLOWED=NO
+          xcodebuild archive -project NARA.xcodeproj -scheme NARA -configuration Release -archivePath $CM_BUILD_DIR/NARA.xcarchive
           echo "** BUILD SUCCEEDED **"
     artifacts:
       - $CM_BUILD_DIR/NARA.xcarchive
