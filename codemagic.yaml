@@ -1,33 +1,24 @@
 workflows:
-  nara-ios-release:
-    name: NARA iOS Release - Alla Sprak - RATT
+  nara-ios-testflight:
+    name: nara-ios-testflight - Alla Sprak - RATT
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
       xcode: latest
       cocoapods: default
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
     scripts:
-      - name: Fix and Build - Alla Sprak - TARGET NARA RATT
+      - name: Set up CocoaPods
         script: |
-          echo "=== Bygger NÄRA för ALLA SPRÅK - TARGET NARA ==="
-          mkdir -p NARA
-          cp NARA.xcodeproj/Info.plist NARA/ 2>/dev/null || true
-          cp NARA.xcodeproj/NARAApp.swift NARA/ 2>/dev/null || true
-          cp NARA.xcodeproj/LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          cp Info.plist NARA/ 2>/dev/null || true
-          cp NARAApp.swift NARA/ 2>/dev/null || true
-          cp LaunchScreen.storyboard NARA/ 2>/dev/null || true
-          echo "Bygger med -target NARA - DETTA AR RATT!"
-          xcodebuild -project NARA.xcodeproj -target NARA -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
+          cd ios && pod install --repo-update
+      - name: Build with target NARA
+        script: |
+          cd ios
+          xcodebuild -workspace NARA.xcworkspace -target NARA -configuration Release -sdk iphoneos -archivePath $CM_BUILD_DIR/NARA.xcarchive archive CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - /tmp/xcodebuild_logs/*.log
+      - build/ios/ipa/*.ipa
     publishing:
-      email:
-        recipients:
-          - susannewessman@hotmail.com
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
