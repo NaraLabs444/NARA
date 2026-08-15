@@ -3,12 +3,12 @@ workflows:
     name: nara-ios-testflight
     instance_type: mac_mini_m2
     max_build_duration: 60
+    integrations:
+      apple_developer_portal: NARA Key
     environment:
       xcode: latest
-      groups:
-        - app_store_connect
     scripts:
-      - name: Setup signing
+      - name: Set up signing
         script: |
           keychain initialize
           app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_STORE --create
@@ -16,12 +16,10 @@ workflows:
           xcode-project use-profiles
       - name: Build IPA
         script: |
-          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA --config Release
+          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        apple_api_key: NARA Key
         submit_to_testflight: true
