@@ -8,10 +8,14 @@ workflows:
     environment:
       xcode: latest
     scripts:
-      - name: Build IPA with automatic signing
+      - name: Build IPA
         script: |
           keychain initialize
-          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA --archive-flags "-allowProvisioningUpdates"
+          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
+          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release archive -archivePath build/NARA.xcarchive -allowProvisioningUpdates
+          xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -allowProvisioningUpdates -exportOptionsPlist /tmp/ExportOptions.plist || xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -allowProvisioningUpdates -exportOptionsPlist <(echo '{"method":"app-store"}')
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
