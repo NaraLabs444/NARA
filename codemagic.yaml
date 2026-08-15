@@ -7,41 +7,22 @@ workflows:
       app_store_connect: NARA Key
     environment:
       xcode: latest
-      vars:
-        XCODE_PROJECT: NARA.xcodeproj
-        XCODE_SCHEME: NARA
-        BUNDLE_ID: com.naralabs.NARA
     scripts:
       - name: Set up signing
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create
-          keychain add-certificates
-          xcode-project use-profiles
-      - name: Build IPA
+          BUNDLE=$(xcode-project detect-bundle-id --project NARA.xcodeproj 2>/dev/null || echo "com.naralabs.NARA")
+          echo "Bundle: $BUNDLE"
+          app-store-connect fetch-signing-files $BUNDLE --type IOS_APP_STORE --create || true
+          keychain add-certificates || true
+          xcode-project use-profiles || true
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles"
+      - name: Build IPA automatic
         script: |
-          xcodebuild -project $XCODE_PROJECT -scheme $XCODE_SCHEME -configuration Release archive -archivePath build/NARA.xcarchive DEVELOPMENT_TEAM=W5RH5H66ZG CODE_SIGN_STYLE=Manual
+          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release archive -archivePath build/NARA.xcarchive CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=W5RH5H66ZG -allowProvisioningUpdates
           mkdir -p build/ios/ipa
-          cat > /tmp/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>W5RH5H66ZG</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>com.naralabs.NARA</key>
-              <string>NARA App Store</string>
-            </dict>
-          </dict>
-          </plist>
-          EOF
-          xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -exportOptionsPlist /tmp/ExportOptions.plist
+          echo '{"method":"app-store"}' > /tmp/options.json
+          xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -exportOptionsPlist /tmp/options.json -allowProvisioningUpdates
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
