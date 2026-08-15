@@ -7,34 +7,21 @@ workflows:
       app_store_connect: NARA Key
     environment:
       xcode: latest
+      vars:
+        XCODE_PROJECT: NARA.xcodeproj
+        XCODE_SCHEME: NARA
     scripts:
-      - name: Set up signing
+      - name: Set up signing and build
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_STORE --create
-          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_DEVELOPMENT --create
-          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_ADHOC --create || true
+          BUNDLE=$(grep -r PRODUCT_BUNDLE_IDENTIFIER NARA.xcodeproj/project.pbxproj | head -1 | sed 's/.*= \(.*\);/\1/' | tr -d '"')
+          echo "Actual Bundle ID in project: $BUNDLE"
+          app-store-connect fetch-signing-files $BUNDLE --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files $BUNDLE --type IOS_APP_DEVELOPMENT --create
           keychain add-certificates
           xcode-project use-profiles
-          echo "Profiles:"
-          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/ | tail -20
-      - name: Build IPA
-        script: |
-          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release archive -archivePath build/NARA.xcarchive DEVELOPMENT_TEAM=W5RH5H66ZG CODE_SIGN_STYLE=Manual
-          mkdir -p build/ios/ipa
-          cat > /tmp/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>W5RH5H66ZG</string>
-          </dict>
-          </plist>
-          EOF
-          xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -exportOptionsPlist /tmp/ExportOptions.plist
+          ls ~/Library/MobileDevice/Provisioning\ Profiles/
+          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA --config Release
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
