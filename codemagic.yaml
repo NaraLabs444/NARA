@@ -11,18 +11,30 @@ workflows:
       - name: Set up signing
         script: |
           keychain initialize
-          BUNDLE=$(xcode-project detect-bundle-id --project NARA.xcodeproj 2>/dev/null || echo "com.naralabs.NARA")
-          echo "Bundle: $BUNDLE"
-          app-store-connect fetch-signing-files $BUNDLE --type IOS_APP_STORE --create || true
-          keychain add-certificates || true
-          xcode-project use-profiles || true
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles"
-      - name: Build IPA automatic
+          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_DEVELOPMENT --create
+          app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_ADHOC --create || true
+          keychain add-certificates
+          xcode-project use-profiles
+          echo "Profiles:"
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/ | tail -20
+      - name: Build IPA
         script: |
-          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release archive -archivePath build/NARA.xcarchive CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=W5RH5H66ZG -allowProvisioningUpdates
+          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release archive -archivePath build/NARA.xcarchive DEVELOPMENT_TEAM=W5RH5H66ZG CODE_SIGN_STYLE=Manual
           mkdir -p build/ios/ipa
-          echo '{"method":"app-store"}' > /tmp/options.json
-          xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -exportOptionsPlist /tmp/options.json -allowProvisioningUpdates
+          cat > /tmp/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>W5RH5H66ZG</string>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive -archivePath build/NARA.xcarchive -exportPath build/ios/ipa -exportOptionsPlist /tmp/ExportOptions.plist
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
