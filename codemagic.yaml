@@ -2,6 +2,8 @@ workflows:
   nara-ios-testflight:
     name: nara-ios-testflight
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Codemagic2
     environment:
       xcode: latest
       cocoapods: default
@@ -16,5 +18,6 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
+        auth: integration
         api_key: Codemagic2
         submit_to_testflight: true
