@@ -1,12 +1,9 @@
 workflows:
   nara-ios-testflight:
     name: nara-ios-testflight
-    max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect_api_key:
-        key_id: B3V9D5FV3U
-        issuer_id: f600fee7-33d7-452f-886d-b59a96f68f02
+      app_store_connect_api_key: Codemagic2
     environment:
       xcode: latest
       cocoapods: default
@@ -24,7 +21,6 @@ workflows:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
+        auth: integration
         api_key: Codemagic2
         submit_to_testflight: true
-        beta_groups:
-          - Golf Testers
