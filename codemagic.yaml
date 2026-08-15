@@ -7,21 +7,18 @@ workflows:
       app_store_connect: NARA Key
     environment:
       xcode: latest
-      vars:
-        XCODE_PROJECT: NARA.xcodeproj
-        XCODE_SCHEME: NARA
     scripts:
-      - name: Set up signing and build
+      - name: Set up signing
         script: |
           keychain initialize
-          BUNDLE=$(grep -r PRODUCT_BUNDLE_IDENTIFIER NARA.xcodeproj/project.pbxproj | head -1 | sed 's/.*= \(.*\);/\1/' | tr -d '"')
-          echo "Actual Bundle ID in project: $BUNDLE"
+          BUNDLE=$(xcode-project detect-bundle-id --project NARA.xcodeproj)
+          echo "Bundle is: $BUNDLE"
           app-store-connect fetch-signing-files $BUNDLE --type IOS_APP_STORE --create
-          app-store-connect fetch-signing-files $BUNDLE --type IOS_APP_DEVELOPMENT --create
           keychain add-certificates
           xcode-project use-profiles
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/
-          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA --config Release
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
