@@ -1,6 +1,9 @@
 workflows:
   nara-ios-testflight:
+    name: nara-ios-testflight
+    instance_type: mac_mini_m2
     integrations:
+      apple_developer_portal: Codemagic2
       app_store_connect: Codemagic2
     environment:
       xcode: latest
