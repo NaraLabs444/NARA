@@ -20,10 +20,14 @@ workflows:
       - name: Set up signing
         script: |
           xcode-project use-profiles
+      - name: List targets for debug
+        script: |
+          xcodebuild -list -project "$XCODE_PROJECT"
       - name: Build IPA
         script: |
           xcodebuild -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
+            -target "$XCODE_SCHEME" \
+            -configuration Release \
             -archivePath $HOME/build/ios/xcarchive/NARA.xcarchive \
             archive \
             CODE_SIGN_STYLE=Automatic \
