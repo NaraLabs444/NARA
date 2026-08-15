@@ -3,25 +3,57 @@ workflows:
     name: nara-ios-testflight
     instance_type: mac_mini_m2
     max_build_duration: 60
-    integrations:
-      app_store_connect: NARA Key
     environment:
       xcode: latest
       cocoapods: default
+      vars:
+        XCODE_PROJECT: "NARA.xcodeproj"
+        XCODE_SCHEME: "NARA"
+        BUNDLE_ID: "se.naraapp.nara"
+        TEAM_ID: "W5RH5H66ZG"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          included: true
     scripts:
       - name: Set up signing
         script: |
-          keychain initialize
-          app-store-connect fetch-signing-files se.naraapp.nara --type IOS_APP_STORE --create
-          keychain add-certificates
-          xcode-project use-profiles
+          # Skapar provisioning profile automatiskt med App Store Connect API
+          xcode-project use-profiles --project "$XCODE_PROJECT" --bundle-ids "$BUNDLE_ID"
+      
       - name: Build IPA
         script: |
-          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA
+          # Arkivera med Automatic signing - det var här det krashade förut
+          xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -archivePath $HOME/build/ios/xcarchive/NARA.xcarchive \
+            archive \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM=$TEAM_ID \
+            PRODUCT_BUNDLE_IDENTIFIER=$BUNDLE_ID \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            -allowProvisioningUpdates
+
+          # Exportera IPA för TestFlight
+          xcodebuild -exportArchive \
+            -archivePath $HOME/build/ios/xcarchive/NARA.xcarchive \
+            -exportPath $HOME/build/ios/ipa \
+            -exportOptionsPlist ios/ExportOptions.plist \
+            -allowProvisioningUpdates || \
+          xcodebuild -exportArchive \
+            -archivePath $HOME/build/ios/xcarchive/NARA.xcarchive \
+            -exportPath $HOME/build/ios/ipa \
+            -allowProvisioningUpdates
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
         auth: integration
+        # Använder din App Store Connect API-nyckel som du redan kopplat i Codemagic
         submit_to_testflight: true
+        beta_groups: 
+          - NÄRA Testare
