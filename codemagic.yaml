@@ -1,56 +1,30 @@
 workflows:
   nara-ios-testflight:
     name: nara-ios-testflight
-    instance_type: mac_mini_m2
     max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect_api_key:
+        key_id: B3V9D5FV3U
+        issuer_id: f600fee7-33d7-452f-886d-b59a96f68f02
     environment:
       xcode: latest
       cocoapods: default
-      vars:
-        XCODE_PROJECT: "NARA.xcodeproj"
-        XCODE_SCHEME: "NARA"
-        BUNDLE_ID: "se.naraapp.nara"
-        TEAM_ID: "W5RH5H66ZG"
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
     scripts:
-      - name: Set up signing
+      - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
-      - name: Create shared scheme if missing
+      - name: Install pods
         script: |
-          set -e
-          SCHEME_DIR="$XCODE_PROJECT/xcshareddata/xcschemes"
-          mkdir -p "$SCHEME_DIR"
-          SCHEME_FILE="$SCHEME_DIR/$XCODE_SCHEME.xcscheme"
-          if [ ! -f "$SCHEME_FILE" ]; then
-            PBXPROJ="$XCODE_PROJECT/project.pbxproj"
-            TARGET_ID=$(grep -oE "[A-F0-9]{24} /\* $XCODE_SCHEME \*/" "$PBXPROJ" | grep -oE "[A-F0-9]{24}" | head -1)
-            cat > "$SCHEME_FILE" <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <Scheme LastUpgradeVersion="1510" version="1.7">
-            <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
-              <BuildActionEntries>
-                <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
-                  <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference>
-                </BuildActionEntry>
-              </BuildActionEntries>
-            </BuildAction>
-            <TestAction buildConfiguration="Debug" shouldUseLaunchSchemeArgsEnv="YES" codeCoverageEnabled="YES"><Testables></Testables></TestAction>
-            <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" allowLocationSimulation="YES"><BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference></BuildableProductRunnable></LaunchAction>
-            <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"><BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference></BuildableProductRunnable></ProfileAction>
-            <AnalyzeAction buildConfiguration="Debug"></AnalyzeAction>
-            <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference></ArchiveAction>
-          </Scheme>
-          EOF
-          fi
-          ls -l "$SCHEME_FILE"
+          cd ios && pod install
       - name: Build IPA
         script: |
-          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+          xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        api_key: Codemagic2
+        submit_to_testflight: true
+        beta_groups:
+          - Golf Testers
