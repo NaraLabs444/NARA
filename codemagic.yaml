@@ -56,4 +56,5 @@ workflows:
         # Använder din App Store Connect API-nyckel som du redan kopplat i Codemagic
         submit_to_testflight: true
         beta_groups: 
-          - NÄRA Testare
+                  beta_groups: 
+          - Testare
