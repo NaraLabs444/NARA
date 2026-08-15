@@ -20,25 +20,48 @@ workflows:
       - name: Set up signing
         script: |
           xcode-project use-profiles
-      - name: List targets for debug
+      - name: Create shared scheme if missing
         script: |
-          xcodebuild -list -project "$XCODE_PROJECT"
-      - name: Build IPA
+          set -e
+          SCHEME_DIR="$XCODE_PROJECT/xcshareddata/xcschemes"
+          mkdir -p "$SCHEME_DIR"
+          SCHEME_FILE="$SCHEME_DIR/$XCODE_SCHEME.xcscheme"
+          if [ -f "$SCHEME_FILE" ]; then
+            echo "Scheme exists: $SCHEME_FILE"
+            exit 0
+          fi
+          echo "Creating shared scheme..."
+          PBXPROJ="$XCODE_PROJECT/project.pbxproj"
+          TARGET_ID=$(grep -A5 "PBXNativeTarget" "$PBXPROJ" | grep -B5 "name = $XCODE_SCHEME;" | grep "isa = PBXNativeTarget" -A2 -B10 | grep -oE "[A-F0-9]{24}" | head -1)
+          if [ -z "$TARGET_ID" ]; then
+            TARGET_ID=$(grep -oE "[A-F0-9]{24} /\* $XCODE_SCHEME \*/" "$PBXPROJ" | grep -oE "[A-F0-9]{24}" | head -1)
+          fi
+          echo "Found Target ID: $TARGET_ID"
+          cat > "$SCHEME_FILE" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Scheme LastUpgradeVersion="1510" version="1.7">
+            <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
+              <BuildActionEntries>
+                <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
+                  <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference>
+                </BuildActionEntry>
+              </BuildActionEntries>
+            </BuildAction>
+            <TestAction buildConfiguration="Debug" shouldUseLaunchSchemeArgsEnv="YES" codeCoverageEnabled="YES">
+              <Testables></Testables>
+            </TestAction>
+            <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" allowLocationSimulation="YES">
+              <BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference></BuildableProductRunnable>
+            </LaunchAction>
+            <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"><BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference></BuildableProductRunnable></ProfileAction>
+            <AnalyzeAction buildConfiguration="Debug"></AnalyzeAction>
+            <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="$TARGET_ID" BuildableName="$XCODE_SCHEME.app" BlueprintName="$XCODE_SCHEME" ReferencedContainer="container:$XCODE_PROJECT"></BuildableReference></ArchiveAction>
+          </Scheme>
+          EOF
+          cat "$SCHEME_FILE"
+      - name: Build IPA with xcode-project
         script: |
-          xcodebuild -project "$XCODE_PROJECT" \
-            -target "$XCODE_SCHEME" \
-            -configuration Release \
-            -archivePath $HOME/build/ios/xcarchive/NARA.xcarchive \
-            archive \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=$TEAM_ID \
-            PRODUCT_BUNDLE_IDENTIFIER=$BUNDLE_ID \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            -allowProvisioningUpdates
-          xcodebuild -exportArchive \
-            -archivePath $HOME/build/ios/xcarchive/NARA.xcarchive \
-            -exportPath $HOME/build/ios/ipa \
-            -allowProvisioningUpdates
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
