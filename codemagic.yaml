@@ -2,25 +2,19 @@ workflows:
   nara-ios-testflight:
     name: nara-ios-testflight
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect_api_key: Codemagic2
     environment:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Set up code signing settings on Xcode project
-        script: |
-          xcode-project use-profiles
+      - name: Set up code signing
+        script: xcode-project use-profiles
       - name: Install pods
-        script: |
-          cd ios && pod install
+        script: cd ios && pod install
       - name: Build IPA
-        script: |
-          xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
+        script: xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
-        auth: integration
         api_key: Codemagic2
         submit_to_testflight: true
