@@ -8,37 +8,14 @@ workflows:
     environment:
       xcode: latest
     scripts:
-      - name: Fix project and signing
+      - name: Set up signing
         script: |
           keychain initialize
-          echo "Patching project.pbxproj with Team W5RH5H66ZG..."
-          python3 << 'PY'
-          import re
-          path="NARA.xcodeproj/project.pbxproj"
-          with open(path,"r") as f:
-            content=f.read()
-          # Add team and manual signing after each PRODUCT_BUNDLE_IDENTIFIER if not exists
-          def add_signing(match):
-            block=match.group(0)
-            if "DEVELOPMENT_TEAM" in block:
-              return block
-            insert = f'{match.group(1)}\n\t\t\t\tDEVELOPMENT_TEAM = W5RH5H66ZG;\n\t\t\t\tCODE_SIGN_STYLE = Manual;\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = {match.group(2)};'
-            return insert
-          # Replace all PRODUCT_BUNDLE_IDENTIFIER lines to ensure team exists nearby
-          # Simpler: insert team after PRODUCT_BUNDLE_IDENTIFIER
-          content = re.sub(r'(PRODUCT_BUNDLE_IDENTIFIER = )([^;]+;)', r'\1\2\n\t\t\t\tDEVELOPMENT_TEAM = W5RH5H66ZG;\n\t\t\t\tCODE_SIGN_STYLE = Manual;\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";', content)
-          with open(path,"w") as f:
-            f.write(content)
-          print("Patched!")
-          PY
-          cat NARA.xcodeproj/project.pbxproj | grep -A2 BUNDLE_IDENTIFIER | head -20
           app-store-connect fetch-signing-files com.naralabs.NARA --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/
       - name: Build IPA
-        script: |
-          xcode-project build-ipa --project NARA.xcodeproj --scheme NARA --verbose
+        script: xcode-project build-ipa --project NARA.xcodeproj --scheme NARA
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
