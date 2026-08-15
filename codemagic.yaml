@@ -4,9 +4,10 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 60
     integrations:
-      apple_developer_portal: NARA Key
+      app_store_connect: NARA Key
     environment:
       xcode: latest
+      cocoapods: default
     scripts:
       - name: Set up signing
         script: |
@@ -19,7 +20,10 @@ workflows:
           xcode-project build-ipa --project NARA.xcodeproj --scheme NARA
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        apple_api_key: NARA Key
+        api_key: NARA Key
         submit_to_testflight: true
+        beta_groups: 
+          - NARA Testers
