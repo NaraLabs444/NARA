@@ -11,26 +11,19 @@ workflows:
         distribution_type: app_store
         bundle_identifier: se.naraapp.nara
       vars:
-        XCODE_WORKSPACE: "ios/NARA.xcworkspace"
+        XCODE_PROJECT: "NARA.xcodeproj"
         XCODE_SCHEME: "NARA"
       xcode: latest
-      cocoapods: default
     scripts:
-      - name: Install npm dependencies
-        script: |
-          npm ci
-      - name: Install CocoaPods
-        script: |
-          cd ios && pod install --repo-update
-      - name: Set up code signing
+      - name: Set up signing
         script: |
           keychain initialize
           app-store-connect fetch-signing-files se.naraapp.nara --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
-      - name: Build iOS IPA
+      - name: Build IPA
         script: |
-          xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
