@@ -7,47 +7,20 @@ workflows:
       vars:
         BUNDLE_ID: "se.naraaapp.nara"
         XCODE_SCHEME: "NARA"
-        APP_STORE_CONNECT_ISSUER_ID: Encrypted
-        APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted
-        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted
-        CERTIFICATE_PRIVATE_KEY: Encrypted
       xcode: latest
-      cocoapods: default
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
     scripts:
-      - name: 1 - Fix Bundle ID to Apple (3 a)
+      - name: Fix Bundle ID
         script: |
-          echo "=== FIXAR BUNDLE ID ==="
-          if [ -f "NARA.xcodeproj/project.pbxproj" ]; then
-            sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
-            sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
-            echo "Bundle ID nu: se.naraaapp.nara"
-          fi
-      - name: 2 - Set up code signing & create profile
+          sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+          sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+      - name: Code signing
         script: |
-          echo "=== SKAPAR CERTIFIKAT OCH PROFIL ==="
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
-          echo "Signing klar"
-      - name: 3 - Build IPA
+      - name: Build IPA
         script: |
-          echo "=== BYGGER IPA ==="
-          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "$XCODE_SCHEME"
-          echo "IPA byggd!"
-      - name: 4 - Publish to TestFlight
-        script: |
-          echo "=== LADDAR UPP TILL TESTFLIGHT ==="
-          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
-          echo "Hittade IPA: $IPA_PATH"
-          app-store-connect publish --path "$IPA_PATH" --testflight
-          echo "KLAR - TestFlight uppladdad!"
+          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA"
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
