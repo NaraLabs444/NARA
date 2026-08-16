@@ -1,12 +1,9 @@
 workflows:
-  nara-ios-testflight:
+  nara-ios-release:
     name: NARA iOS TestFlight
-    max_build_duration: 60
     instance_type: mac_mini_m2
+    max_build_duration: 60
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: se.naraaapp.nara
       vars:
         BUNDLE_ID: "se.naraaapp.nara"
         XCODE_WORKSPACE: "NARA.xcworkspace"
@@ -14,31 +11,21 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Set up keychain
-        script: |
-          keychain initialize
-      - name: Fetch signing files - auto create profile
+      - name: Set up code signing
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-      - name: Set up signing certificate
-        script: |
+          keychain initialize
           keychain add-certificates
-      - name: Set up provisioning profiles
+      - name: Set up provisioning profile
         script: |
           xcode-project use-profiles
-      - name: Install CocoaPods
+      - name: Build IPA for TestFlight
         script: |
-          cd ios && pod install --repo-update
-      - name: Build IPA
-        script: |
-          xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+          xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME" --target NARA
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
-        beta_groups:
-          - NARA Testers
+      app-store-connect:
+        auth: integration
+        submission:
+          type: testflight
