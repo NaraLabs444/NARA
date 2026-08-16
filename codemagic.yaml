@@ -8,23 +8,38 @@ workflows:
         BUNDLE_ID: "se.naraaapp.nara"
       xcode: latest
     scripts:
-      - name: Fix Bundle ID
+      - name: 1 Nollstall ALL signing konflikt
         script: |
-          sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-      - name: Keychain
+          echo "Fixar Bundle ID till se.naraaapp.nara"
+          sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+          sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+          echo "Tar bort manuell signing"
+          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' NARA.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Distribution"/CODE_SIGN_IDENTITY = "Apple Development"/g' NARA.xcodeproj/project.pbxproj
+          sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' NARA.xcodeproj/project.pbxproj
+          sed -i '' '/PROVISIONING_PROFILE =/d' NARA.xcodeproj/project.pbxproj
+          sed -i '' '/DevelopmentTeam/d' NARA.xcodeproj/project.pbxproj
+          echo "Signing rensad"
+      - name: 2 Keychain
         script: |
           keychain initialize
-      - name: Build IPA - Fungerande Post
+      - name: 3 Bygg IPA - FUNGERANDE POST
         script: |
           cat > /tmp/ExportOptions.plist <<'PLIST'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
-          <dict><key>method</key><string>app-store</string><key>signingStyle</key><string>automatic</string></dict>
+          <dict>
+            <key>method</key><string>app-store</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict>
           </plist>
           PLIST
-          xcodebuild -project "NARA.xcodeproj" -scheme "NARA" -archivePath "build/ios/xcarchive/NARA.xcarchive" archive CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates COMPILER_INDEX_STORE_ENABLE=NO
-          xcodebuild -exportArchive -archivePath "build/ios/xcarchive/NARA.xcarchive" -exportPath "build/ios/ipa" -exportOptionsPlist /tmp/ExportOptions.plist -allowProvisioningUpdates
+          echo "Startar ARCHIVE med Automatic Development"
+          xcodebuild -project "NARA.xcodeproj" -scheme "NARA" -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/NARA.xcarchive" archive CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="Apple Development" DEVELOPMENT_TEAM="" -allowProvisioningUpdates COMPILER_INDEX_STORE_ENABLE=NO | xcpretty
+          echo "Exportera IPA"
+          xcodebuild -exportArchive -archivePath "$CM_BUILD_DIR/build/ios/xcarchive/NARA.xcarchive" -exportPath "$CM_BUILD_DIR/build/ios/ipa" -exportOptionsPlist /tmp/ExportOptions.plist -allowProvisioningUpdates
+          ls -lh $CM_BUILD_DIR/build/ios/ipa/
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/ios/xcarchive/*.xcarchive
