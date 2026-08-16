@@ -5,17 +5,9 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       xcode: latest
-      cocoapods: default
     scripts:
-      - name: Fix Bundle ID
+      - name: Build NARA
         script: |
-          sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-      - name: Keychain
-        script: |
-          keychain initialize
-      - name: Build IPA
-        script: |
-          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA"
+          xcodebuild -project NARA.xcodeproj -scheme NARA -configuration Release archive -archivePath build/NARA.xcarchive CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/NARA.xcarchive/**
