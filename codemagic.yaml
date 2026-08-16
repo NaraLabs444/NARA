@@ -7,6 +7,10 @@ workflows:
       vars:
         BUNDLE_ID: "se.naraaapp.nara"
         XCODE_SCHEME: "NARA"
+        APP_STORE_CONNECT_ISSUER_ID: Encrypted
+        APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted
+        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted
+        CERTIFICATE_PRIVATE_KEY: Encrypted
       xcode: latest
       cocoapods: default
     triggering:
@@ -16,45 +20,34 @@ workflows:
         - pattern: main
           include: true
     scripts:
-      - name: Set up code signing
+      - name: 1 - Fix Bundle ID to Apple (3 a)
         script: |
+          echo "=== FIXAR BUNDLE ID ==="
+          if [ -f "NARA.xcodeproj/project.pbxproj" ]; then
+            sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+            sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+            echo "Bundle ID nu: se.naraaapp.nara"
+          fi
+      - name: 2 - Set up code signing & create profile
+        script: |
+          echo "=== SKAPAR CERTIFIKAT OCH PROFIL ==="
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles
-      - name: Find Xcode files
+          echo "Signing klar"
+      - name: 3 - Build IPA
         script: |
-          echo "Letar efter projekt..."
-          ls -la
-          find . -name "*.xcworkspace" -o -name "*.xcodeproj" | head -20
-      - name: Build IPA for TestFlight
+          echo "=== BYGGER IPA ==="
+          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "$XCODE_SCHEME"
+          echo "IPA byggd!"
+      - name: 4 - Publish to TestFlight
         script: |
-          if [ -d "NARA.xcworkspace" ]; then
-            echo "Hittade NARA.xcworkspace"
-            xcode-project build-ipa --workspace "NARA.xcworkspace" --scheme "$XCODE_SCHEME"
-          elif [ -f "NARA.xcodeproj/project.pbxproj" ]; then
-            echo "Hittade NARA.xcodeproj"
-            xcode-project build-ipa --project "NARA.xcodeproj" --scheme "$XCODE_SCHEME"
-          elif [ -d "NARA/NARA.xcworkspace" ]; then
-            echo "Hittade NARA/NARA.xcworkspace"
-            xcode-project build-ipa --workspace "NARA/NARA.xcworkspace" --scheme "$XCODE_SCHEME"
-          elif [ -f "NARA/NARA.xcodeproj/project.pbxproj" ]; then
-            echo "Hittade NARA/NARA.xcodeproj"
-            xcode-project build-ipa --project "NARA/NARA.xcodeproj" --scheme "$XCODE_SCHEME"
-          else
-            WORKSPACE=$(find . -name "*.xcworkspace" | head -1)
-            PROJECT=$(find . -name "*.xcodeproj" | head -1)
-            if [ -n "$WORKSPACE" ]; then
-              echo "Hittade workspace: $WORKSPACE"
-              xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$XCODE_SCHEME"
-            elif [ -n "$PROJECT" ]; then
-              echo "Hittade project: $PROJECT"
-              xcode-project build-ipa --project "$PROJECT" --scheme "$XCODE_SCHEME"
-            else
-              echo "Hittade ingen workspace eller project!"
-              exit 1
-            fi
-          fi
+          echo "=== LADDAR UPP TILL TESTFLIGHT ==="
+          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+          echo "Hittade IPA: $IPA_PATH"
+          app-store-connect publish --path "$IPA_PATH" --testflight
+          echo "KLAR - TestFlight uppladdad!"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
