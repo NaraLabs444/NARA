@@ -13,15 +13,16 @@ workflows:
         script: |
           sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
           sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || sed -i 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' NARA.xcodeproj/project.pbxproj || sed -i 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' NARA.xcodeproj/project.pbxproj
       - name: Code signing
         script: |
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           keychain add-certificates
-          xcode-project use-profiles --bundle-identifier "$BUNDLE_ID"
-          ls -l ~/Library/MobileDevice/Provisioning\ Profiles/
+          xcode-project use-profiles
       - name: Build IPA
         script: |
           xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA"
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/ios/xcarchive/*.xcarchive
