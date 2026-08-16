@@ -4,16 +4,24 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
+      groups:
+        - app_store_connect
       vars:
         BUNDLE_ID: "se.naraaapp.nara"
         XCODE_SCHEME: "NARA"
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Fix Bundle ID
+      - name: Återställ och fixa Bundle ID
         script: |
-          sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
+          echo "Återställer project.pbxproj till original från Git"
+          git fetch origin main || true
+          git checkout origin/main -- NARA.xcodeproj/project.pbxproj || true
+          echo "Fixar Bundle ID till se.naraaapp.nara"
+          sed -i '' 's/com\.naralabs\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
+          sed -i '' 's/se\.naraapp\.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
+          sed -i '' 's/com\.naraapp\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
+          echo "Project fixat"
       - name: Set up code signing and create App Store profile
         script: |
           keychain initialize
@@ -26,3 +34,8 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
