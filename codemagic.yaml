@@ -24,8 +24,5 @@ workflows:
           xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME" --target NARA
     artifacts:
       - build/ios/ipa/*.ipa
-    publishing:
-      app-store-connect:
-        auth: integration
-        submission:
-          type: testflight
+  
+    
