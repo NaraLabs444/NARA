@@ -6,96 +6,91 @@ workflows:
     environment:
       xcode: latest
       cocoapods: default
-      vars:
-        BUNDLE_ID: "se.naraaapp.nara"
     scripts:
-      - name: Skapa saknade filer och fixa projekt
+      - name: VERKSTÄLL ALLT - Skapa hela appen
         script: |
-          echo "Kontrollerar saknade filer..."
+          set -e
+          echo "=== VERKSTÄLLER ALLT ==="
           mkdir -p NARA
-          if [ ! -f NARA/Info.plist ]; then
-            echo "Skapar NARA/Info.plist"
-            cat > NARA/Info.plist << 'PLIST'
+          
+          # 1. Info.plist - MÅSTE FINNAS
+          cat > NARA/Info.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-          	<key>CFBundleDisplayName</key>
-          	<string>NARA</string>
-          	<key>CFBundleExecutable</key>
-          	<string>$(EXECUTABLE_NAME)</string>
-          	<key>CFBundleIdentifier</key>
-          	<string>se.naraaapp.nara</string>
-          	<key>CFBundleInfoDictionaryVersion</key>
-          	<string>6.0</string>
-          	<key>CFBundleName</key>
-          	<string>$(PRODUCT_NAME)</string>
-          	<key>CFBundlePackageType</key>
-          	<string>APPL</string>
-          	<key>CFBundleShortVersionString</key>
-          	<string>1.0</string>
-          	<key>CFBundleVersion</key>
-          	<string>1</string>
-          	<key>LSRequiresIPhoneOS</key>
-          	<true/>
-          	<key>UILaunchStoryboardName</key>
-          	<string>LaunchScreen</string>
-          	<key>UISupportedInterfaceOrientations</key>
-          	<array>
-          		<string>UIInterfaceOrientationPortrait</string>
-          	</array>
+            <key>CFBundleDisplayName</key><string>NARA</string>
+            <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+            <key>CFBundleIdentifier</key><string>se.naraaapp.nara</string>
+            <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+            <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>1.0</string>
+            <key>CFBundleVersion</key><string>1</string>
+            <key>LSRequiresIPhoneOS</key><true/>
+            <key>UILaunchStoryboardName</key><string>LaunchScreen</string>
+            <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
           </dict>
           </plist>
-          PLIST
-          fi
-          if [ ! -f NARA/LaunchScreen.storyboard ]; then
-            echo "Skapar NARA/LaunchScreen.storyboard"
-            cat > NARA/LaunchScreen.storyboard << 'STORY'
+          EOF
+          
+          # 2. LaunchScreen - MÅSTE FINNAS
+          cat > NARA/LaunchScreen.storyboard << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
-          <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="AppleSDK" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-              <device id="retina6_1" orientation="portrait" appearance="light"/>
-              <dependencies>
-                  <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
-                  <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-              </dependencies>
-              <scenes>
-                  <scene sceneID="EHf-IW-A2E">
-                      <objects>
-                          <viewController id="01J-lp-oVM" sceneMemberID="viewController">
-                              <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                                  <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                                  <subviews>
-                                      <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="NARA" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kId-c2-rCX">
-                                          <rect key="frame" x="20" y="421" width="374" height="54"/>
-                                          <fontDescription key="fontDescription" type="boldSystem" pointSize="45"/>
-                                      </label>
-                                  </subviews>
-                                  <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
-                                  <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                  <constraints>
-                                      <constraint firstItem="kId-c2-rCX" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="3oC-fJ-0dW"/>
-                                      <constraint firstItem="kId-c2-rCX" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4Jc-5y-0kL"/>
-                                      <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="kId-c2-rCX" secondAttribute="trailing" constant="20" id="8uQ-0p-1aZ"/>
-                                  </constraints>
-                              </view>
-                          </viewController>
-                          <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                      </objects>
-                  </scene>
-              </scenes>
-          </document>
-          STORY
+          <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="AppleSDK" useAutolayout="YES" launchScreen="YES" useSafeAreas="YES" initialViewController="01J-lp-oVM">
+          <device id="retina6_1" orientation="portrait" appearance="light"/>
+          <dependencies><plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/></dependencies>
+          <scenes><scene sceneID="EHf-IW-A2E"><objects><viewController id="01J-lp-oVM" sceneMemberID="viewController"><view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3"><rect key="frame" x="0.0" y="0.0" width="414" height="896"/><subviews><label opaque="NO" text="NARA" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" translatesAutoresizingMaskIntoConstraints="NO" id="kId-c2-rCX"><rect key="frame" x="20" y="421" width="374" height="54"/><fontDescription key="fontDescription" type="boldSystem" pointSize="45"/></label></subviews><viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/><color key="backgroundColor" systemColor="systemBackgroundColor"/><constraints><constraint firstItem="kId-c2-rCX" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="3oC"/><constraint firstItem="kId-c2-rCX" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4Jc"/><constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="kId-c2-rCX" secondAttribute="trailing" constant="20" id="8uQ"/></constraints></view></viewController></objects></scene></scenes></document>
+          EOF
+          
+          # 3. Minimal App-fil - om den saknas
+          if [ ! -f NARA/NARAApp.swift ] && [ ! -f NARA/App.swift ] && [ ! -f NARA/NARA.swift ]; then
+            echo "Skapar NARAApp.swift - huvudfil saknas"
+            cat > NARA/NARAApp.swift << 'EOF'
+          import SwiftUI
+          @main
+          struct NARAApp: App {
+              var body: some Scene {
+                  WindowGroup {
+                      ContentView()
+                  }
+              }
+          }
+          EOF
           fi
-          # Fixa Bundle ID
+          
+          # 4. ContentView - om den saknas
+          if [ ! -f NARA/ContentView.swift ]; then
+            echo "Skapar ContentView.swift"
+            cat > NARA/ContentView.swift << 'EOF'
+          import SwiftUI
+          struct ContentView: View {
+              var body: some View {
+                  VStack {
+                      Text("NARA").font(.largeTitle).bold()
+                      Text("se.naraaapp.nara").font(.caption).foregroundColor(.gray)
+                  }
+              }
+          }
+          EOF
+          fi
+          
+          # 5. Fixa Bundle ID överallt
           sed -i '' 's/com\.naralabs\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
           sed -i '' 's/se\.naraapp\.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          echo "Filer fixade"
-      - name: Keychain
+          sed -i '' 's/com\.naraapp\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
+          
+          echo "=== ALLA FILER SKAPADE ==="
+          ls -la NARA/
+          
+      - name: Keychain init
         script: |
           keychain initialize
-      - name: Build NARA
+          
+      - name: Build IPA - FUNGERANDE POST
         script: |
           xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA"
+          
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
