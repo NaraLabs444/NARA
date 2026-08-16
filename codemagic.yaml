@@ -6,27 +6,25 @@ workflows:
     environment:
       vars:
         BUNDLE_ID: "se.naraaapp.nara"
-        XCODE_SCHEME: "NARA"
       xcode: latest
     scripts:
-      - name: 1 Fix Bundle ID (3 a)
+      - name: Fix Bundle ID
         script: |
           sed -i '' 's/com.naralabs.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
           sed -i '' 's/se.naraapp.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-      - name: 2 Code signing - skapar profil
+      - name: Keychain
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
-          keychain add-certificates
-          xcode-project use-profiles --bundle-identifier "$BUNDLE_ID"
-      - name: 3 Build IPA - AUTOMATIC (fixen för ditt fel)
+      - name: Build IPA - Fungerande Post
         script: |
-          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "$XCODE_SCHEME" --archive-flags "CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates"
+          cat > /tmp/ExportOptions.plist <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict><key>method</key><string>app-store</string><key>signingStyle</key><string>automatic</string></dict>
+          </plist>
+          PLIST
+          xcodebuild -project "NARA.xcodeproj" -scheme "NARA" -archivePath "build/ios/xcarchive/NARA.xcarchive" archive CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates COMPILER_INDEX_STORE_ENABLE=NO
+          xcodebuild -exportArchive -archivePath "build/ios/xcarchive/NARA.xcarchive" -exportPath "build/ios/ipa" -exportOptionsPlist /tmp/ExportOptions.plist -allowProvisioningUpdates
     artifacts:
       - build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
