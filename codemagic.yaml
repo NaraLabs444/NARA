@@ -5,92 +5,57 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       xcode: latest
-      cocoapods: default
+      vars:
+        BUNDLE_ID: "se.naraaapp.nara"
     scripts:
-      - name: VERKSTÄLL ALLT - Skapa hela appen
+      - name: Återskapa saknade filer från loggen
         script: |
-          set -e
-          echo "=== VERKSTÄLLER ALLT ==="
           mkdir -p NARA
-          
-          # 1. Info.plist - MÅSTE FINNAS
+          # Info.plist saknades i din build-logg
+          if [ ! -f NARA/Info.plist ]; then
           cat > NARA/Info.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-            <key>CFBundleDisplayName</key><string>NARA</string>
-            <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
             <key>CFBundleIdentifier</key><string>se.naraaapp.nara</string>
-            <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-            <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
-            <key>CFBundlePackageType</key><string>APPL</string>
-            <key>CFBundleShortVersionString</key><string>1.0</string>
+            <key>CFBundleDisplayName</key><string>NARA</string>
+            <key>CFBundleName</key><string>NARA</string>
             <key>CFBundleVersion</key><string>1</string>
-            <key>LSRequiresIPhoneOS</key><true/>
+            <key>CFBundleShortVersionString</key><string>1.0</string>
             <key>UILaunchStoryboardName</key><string>LaunchScreen</string>
             <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
           </dict>
           </plist>
           EOF
-          
-          # 2. LaunchScreen - MÅSTE FINNAS
+          fi
+          # LaunchScreen saknades i din build-logg
+          if [ ! -f NARA/LaunchScreen.storyboard ]; then
           cat > NARA/LaunchScreen.storyboard << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="AppleSDK" useAutolayout="YES" launchScreen="YES" useSafeAreas="YES" initialViewController="01J-lp-oVM">
           <device id="retina6_1" orientation="portrait" appearance="light"/>
           <dependencies><plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/></dependencies>
-          <scenes><scene sceneID="EHf-IW-A2E"><objects><viewController id="01J-lp-oVM" sceneMemberID="viewController"><view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3"><rect key="frame" x="0.0" y="0.0" width="414" height="896"/><subviews><label opaque="NO" text="NARA" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" translatesAutoresizingMaskIntoConstraints="NO" id="kId-c2-rCX"><rect key="frame" x="20" y="421" width="374" height="54"/><fontDescription key="fontDescription" type="boldSystem" pointSize="45"/></label></subviews><viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/><color key="backgroundColor" systemColor="systemBackgroundColor"/><constraints><constraint firstItem="kId-c2-rCX" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="3oC"/><constraint firstItem="kId-c2-rCX" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4Jc"/><constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="kId-c2-rCX" secondAttribute="trailing" constant="20" id="8uQ"/></constraints></view></viewController></objects></scene></scenes></document>
-          EOF
-          
-          # 3. Minimal App-fil - om den saknas
-          if [ ! -f NARA/NARAApp.swift ] && [ ! -f NARA/App.swift ] && [ ! -f NARA/NARA.swift ]; then
-            echo "Skapar NARAApp.swift - huvudfil saknas"
-            cat > NARA/NARAApp.swift << 'EOF'
-          import SwiftUI
-          @main
-          struct NARAApp: App {
-              var body: some Scene {
-                  WindowGroup {
-                      ContentView()
-                  }
-              }
-          }
+          <scenes><scene sceneID="EHf-IW-A2E"><objects><viewController id="01J-lp-oVM" sceneMemberID="viewController"><view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3"><rect key="frame" x="0.0" y="0.0" width="414" height="896"/><subviews><label opaque="NO" text="NARA" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="kId"><rect key="frame" x="20" y="421" width="374" height="54"/><fontDescription key="fontDescription" type="boldSystem" pointSize="45"/></label></subviews><viewLayoutGuide key="safeArea" id="6Tk"/><color key="backgroundColor" systemColor="systemBackgroundColor"/><constraints><constraint firstItem="kId" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="a"/><constraint firstItem="kId" firstAttribute="leading" secondItem="6Tk" secondAttribute="leading" constant="20" id="b"/><constraint firstItem="6Tk" firstAttribute="trailing" secondItem="kId" secondAttribute="trailing" constant="20" id="c"/></constraints></view></viewController></objects></scene></scenes></document>
           EOF
           fi
-          
-          # 4. ContentView - om den saknas
-          if [ ! -f NARA/ContentView.swift ]; then
-            echo "Skapar ContentView.swift"
-            cat > NARA/ContentView.swift << 'EOF'
+          # Minimal app om Swift-filer saknas
+          if [ ! -f NARA/NARAApp.swift ] && [ ! -f NARA/App.swift ]; then
+          cat > NARA/NARAApp.swift << 'EOF'
           import SwiftUI
-          struct ContentView: View {
-              var body: some View {
-                  VStack {
-                      Text("NARA").font(.largeTitle).bold()
-                      Text("se.naraaapp.nara").font(.caption).foregroundColor(.gray)
-                  }
-              }
-          }
+          @main struct NARAApp: App { var body: some Scene { WindowGroup { Text("NARA se.naraaapp.nara") } } }
           EOF
           fi
-          
-          # 5. Fixa Bundle ID överallt
           sed -i '' 's/com\.naralabs\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          sed -i '' 's/se\.naraapp\.nara/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          sed -i '' 's/com\.naraapp\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          
-          echo "=== ALLA FILER SKAPADE ==="
           ls -la NARA/
-          
-      - name: Keychain init
+      - name: Använd gröna certet och profilen från dina bilder
         script: |
           keychain initialize
-          
-      - name: Build IPA - FUNGERANDE POST
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build IPA
         script: |
           xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA"
-          
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
