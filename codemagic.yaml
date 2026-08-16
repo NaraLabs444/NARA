@@ -7,11 +7,11 @@ workflows:
       xcode: latest
       vars:
         BUNDLE_ID: "se.naraaapp.nara"
+        PROFILE_NAME: "se.naraaapp.nara App Store"
     scripts:
-      - name: Återskapa saknade filer från loggen
+      - name: Skapa filer och fix
         script: |
           mkdir -p NARA
-          # Info.plist saknades i din build-logg
           if [ ! -f NARA/Info.plist ]; then
           cat > NARA/Info.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
@@ -29,7 +29,6 @@ workflows:
           </plist>
           EOF
           fi
-          # LaunchScreen saknades i din build-logg
           if [ ! -f NARA/LaunchScreen.storyboard ]; then
           cat > NARA/LaunchScreen.storyboard << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
@@ -39,23 +38,28 @@ workflows:
           <scenes><scene sceneID="EHf-IW-A2E"><objects><viewController id="01J-lp-oVM" sceneMemberID="viewController"><view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3"><rect key="frame" x="0.0" y="0.0" width="414" height="896"/><subviews><label opaque="NO" text="NARA" textAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="kId"><rect key="frame" x="20" y="421" width="374" height="54"/><fontDescription key="fontDescription" type="boldSystem" pointSize="45"/></label></subviews><viewLayoutGuide key="safeArea" id="6Tk"/><color key="backgroundColor" systemColor="systemBackgroundColor"/><constraints><constraint firstItem="kId" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="a"/><constraint firstItem="kId" firstAttribute="leading" secondItem="6Tk" secondAttribute="leading" constant="20" id="b"/><constraint firstItem="6Tk" firstAttribute="trailing" secondItem="kId" secondAttribute="trailing" constant="20" id="c"/></constraints></view></viewController></objects></scene></scenes></document>
           EOF
           fi
-          # Minimal app om Swift-filer saknas
-          if [ ! -f NARA/NARAApp.swift ] && [ ! -f NARA/App.swift ]; then
-          cat > NARA/NARAApp.swift << 'EOF'
-          import SwiftUI
-          @main struct NARAApp: App { var body: some Scene { WindowGroup { Text("NARA se.naraaapp.nara") } } }
-          EOF
-          fi
           sed -i '' 's/com\.naralabs\.NARA/se.naraaapp.nara/g' NARA.xcodeproj/project.pbxproj || true
-          ls -la NARA/
-      - name: Använd gröna certet och profilen från dina bilder
+      - name: Hämta grön profil och koppla den - TVINGA
         script: |
+          set -x
           keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          echo "Hämtar profil se.naraaapp.nara App Store..."
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create --verbose
+          echo "=== Profiler nerladdade ==="
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/ || true
           keychain add-certificates
-          xcode-project use-profiles
+          echo "=== Kopplar profil till projekt ==="
+          xcode-project use-profiles --verbose || true
+          # TVINGA in profilnamnet direkt i projektet om use-profiles missade
+          echo "Tvingar PROVISIONING_PROFILE_SPECIFIER = $PROFILE_NAME"
+          sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = \"\";/PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/g" NARA.xcodeproj/project.pbxproj || true
+          sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = .*/PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/g" NARA.xcodeproj/project.pbxproj || true
+          # Sätt till Manual om det är Automatic
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' NARA.xcodeproj/project.pbxproj || true
+          echo "=== Klar ==="
       - name: Build IPA
         script: |
-          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA"
+          xcode-project build-ipa --project "NARA.xcodeproj" --scheme "NARA" --verbose
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
